@@ -1,12 +1,12 @@
 {
-	"name": "package_name_here",
+	"name": "remotes",
 	"tree": {
 		"$className": "DataModel",
 	
 		"ReplicatedStorage": {
 			"$className": "ReplicatedStorage",
 			"$path": "shared",
-			"PACKAGE_NAME_HERE": {
+			"Remotes": {
 				"$path": "../default.project.json"
 			},
 			"DevPackages": {
