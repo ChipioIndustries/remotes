@@ -11,6 +11,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local DefaultConfig = require(script.DefaultConfig)
+local DummyRemoteEvent = require(script.DummyRemoteEvent)
+local DummyRemoteFunction = require(script.DummyRemoteFunction)
 
 local packages = script.Packages
 local Llama = require(packages.Llama)
@@ -40,6 +42,8 @@ function Remotes.new(config: DefaultConfig.Config?)
 		_config = config;
 		_eventFolder = getRouteAsync(scopeFolder, "Events");
 		_functionFolder = getRouteAsync(scopeFolder, "Functions");
+		_middleware = {};
+		_dummyCache = {};
 	}
 
 	setmetatable(self, Remotes)
@@ -48,6 +52,18 @@ function Remotes.new(config: DefaultConfig.Config?)
 	table.freeze(config)
 
 	return self
+end
+
+function Remotes:_getRemoteAsync(name: string, className: string, folder: Instance)
+	local remote = folder:FindFirstChild(name)
+
+	if not remote then
+		remote = Instance.new(className)
+		remote.Name = name
+		remote.Parent = folder
+	end
+
+	return remote
 end
 
 function Remotes:getAll()
@@ -75,16 +91,9 @@ function Remotes:getFunctionAsync(name: string)
 	return self:_getRemoteAsync(name, "RemoteFunction", self._functionFolder)
 end
 
-function Remotes:_getRemoteAsync(name: string, className: string, folder: Instance)
-	local remote = folder:FindFirstChild(name)
-
-	if not remote then
-		remote = Instance.new(className)
-		remote.Name = name
-		remote.Parent = folder
-	end
-
-	return remote
+function Remotes:registerServerMiddleware(middleware)
+	assert(RunService:IsServer(), "attempt to register server middleware on client")
+	table.insert(self._middleware, middleware)
 end
 
 return Remotes
