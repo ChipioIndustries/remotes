@@ -43,7 +43,9 @@ function Remotes.new(config: DefaultConfig.Config?)
 		_eventFolder = getRouteAsync(scopeFolder, "Events");
 		_functionFolder = getRouteAsync(scopeFolder, "Functions");
 		_middleware = {};
-		_dummyCache = {};
+		_dummyCache = {
+			-- [Instance] = Dummy.new()
+		};
 	}
 
 	setmetatable(self, Remotes)
