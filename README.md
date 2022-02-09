@@ -16,4 +16,4 @@ Remotes is a template for creating Roblox package repositories.
 
 * Then run `wally install` to install the package.
 
-For more installation methods and usage instructions, see the [documentation](https://chipioindustries.github.io/remotes).
+For usage instructions, see the [documentation](https://chipioindustries.github.io/remotes).

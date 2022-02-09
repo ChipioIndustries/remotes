@@ -1,5 +1,3 @@
-local Signal = require(script.Parent.Packages.Signal)
-
 local DummyRemoteFunction = {}
 DummyRemoteFunction.__index = DummyRemoteFunction
 
@@ -14,12 +12,12 @@ function DummyRemoteFunction.new()
 	return self
 end
 
-function DummyRemoteFunction:_invokeServer()
-
+function DummyRemoteFunction:_invokeServer(...)
+	return self.OnServerInvoke(...)
 end
 
-function DummyRemoteFunction:InvokeClient()
-
+function DummyRemoteFunction:InvokeClient(...)
+	return self._onClientInvoke(...)
 end
 
 return DummyRemoteFunction

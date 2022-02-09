@@ -5,6 +5,7 @@
 	Remotes:getAll()
 	Remotes:getEventAsync(name)
 	Remotes:getFunctionAsync(name)
+	Remotes:registerMiddleware((table args, dictionary metadata) > (bool dropCall, table mutatedArgs))
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -14,9 +15,8 @@ local DefaultConfig = require(script.DefaultConfig)
 local DummyRemoteEvent = require(script.DummyRemoteEvent)
 local DummyRemoteFunction = require(script.DummyRemoteFunction)
 
-local packages = script.Packages
-local Llama = require(packages.Llama)
-local Rapscallion = require(packages.Rapscallion).new()
+local Llama = require(script.Parent.Llama)
+local Rapscallion = require(script.Parent.Rapscallion).new()
 
 local SCOPE_FOLDER_PREFIX = "REMOTES_"
 
@@ -56,16 +56,35 @@ function Remotes.new(config: DefaultConfig.Config?)
 	return self
 end
 
-function Remotes:_getRemoteAsync(name: string, className: string, folder: Instance)
-	local remote = folder:FindFirstChild(name)
-
-	if not remote then
-		remote = Instance.new(className)
-		remote.Name = name
-		remote.Parent = folder
+function Remotes:_executeMiddleware(args, metadata)
+	local dropCall = false
+	for _, middleware in ipairs(self._middleware) do
+		local shouldDropCall, mutatedArgs = middleware(args, metadata)
+		if shouldDropCall then -- drop call
+			dropCall = true
+		end
+		args = mutatedArgs or args
 	end
 
-	return remote
+	return dropCall, args
+end
+
+function Remotes:_getRemoteAsync(name: string, className: string, folder: Instance, _isClientOverride: boolean?)
+	local remote = folder:FindFirstChild(name)
+	local created = false
+
+	if not remote then
+		if (not _isClientOverride) and RunService:IsServer() then
+			remote = Instance.new(className)
+			remote.Name = name
+			remote.Parent = folder
+			created = true
+		else
+			return folder:WaitForChild(name, false)
+		end
+	end
+
+	return remote, created
 end
 
 function Remotes:getAll()
@@ -74,28 +93,103 @@ function Remotes:getAll()
 		functions = {};
 	}
 
-	for _, event in pairs(self._eventFolder) do
-		result.events[event.Name] = event
+	for _, event in pairs(self._eventFolder:GetChildren()) do
+		result.events[event.Name] = self._dummyCache[event]
 	end
 
-	for _, func in pairs(self._functionFolder) do
-		result.events[func.Name] = func
+	for _, func in pairs(self._functionFolder:GetChildren()) do
+		result.functions[func.Name] = self._dummyCache[func]
 	end
 
 	return result
 end
 
 function Remotes:getEventAsync(name: string)
-	return self:_getRemoteAsync(name, "RemoteEvent", self._eventFolder)
+	local remote, created = self:_getRemoteAsync(name, "RemoteEvent", self._eventFolder)
+	if RunService:IsServer() then
+		local dummyRemote = self._dummyCache[remote]
+
+		if not dummyRemote then
+			if created then
+				dummyRemote = DummyRemoteEvent.new()
+
+				dummyRemote._onAllClientEvent:connect(function(...)
+					remote:FireAllClients(...)
+				end)
+
+				dummyRemote._onClientEvent:connect(function(...)
+					remote:FireClient(...)
+				end)
+
+				remote.OnServerEvent:connect(function(...)
+					local metadata = {
+						remoteName = name;
+						remoteClass = "RemoteEvent";
+					}
+
+					local dropCall, args = self:_executeMiddleware({...}, metadata)
+
+					if not dropCall then
+						remote:_fireServer(unpack(args))
+					end
+				end)
+
+				self._dummyCache[remote] = dummyRemote
+			else
+				error(("Remote %s is managed by another Remotes instance"):format(name))
+			end
+		end
+
+		return dummyRemote
+	else
+		return remote
+	end
 end
 
 function Remotes:getFunctionAsync(name: string)
-	return self:_getRemoteAsync(name, "RemoteFunction", self._functionFolder)
+	local remote, created = self:_getRemoteAsync(name, "RemoteFunction", self._functionFolder)
+	if RunService:IsServer() then
+		local dummyRemote = self._dummyCache[remote]
+
+		if not dummyRemote then
+			if created then
+				dummyRemote = DummyRemoteFunction.new()
+
+				dummyRemote._onClientInvoke = function(...)
+					return remote:InvokeClient(...)
+				end
+
+				remote.OnServerInvoke = function(...)
+					local metadata = {
+						remoteName = name;
+						remoteClass = "RemoteFunction";
+					}
+
+					local dropCall, args = self:_executeMiddleware({...}, metadata)
+
+					if not dropCall then
+						return remote:_invokeServer(unpack(args))
+					end
+
+					return nil
+				end
+
+				self._dummyCache[remote] = dummyRemote
+			else
+				error(("Remote %s is managed by another Remotes instance"):format(name))
+			end
+		end
+
+		return dummyRemote
+	else
+		return remote
+	end
 end
 
-function Remotes:registerServerMiddleware(middleware)
+function Remotes:registerMiddleware(middleware)
 	assert(RunService:IsServer(), "attempt to register server middleware on client")
+	assert(typeof(middleware) == "function", "middleware is not a valid function")
 	table.insert(self._middleware, middleware)
 end
 
-return Remotes
+return Remotes.new()
