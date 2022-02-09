@@ -1,7 +1,7 @@
 [package]
 name = "chipioindustries/remotes"
 description = "A handler for RemoteEvent and RemoteFunction instances."
-version = "0.1.0"
+version = "1.0.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
