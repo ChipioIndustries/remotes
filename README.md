@@ -11,7 +11,7 @@ Remotes is a template for creating Roblox package repositories.
 * Add this line to your `wally.toml` file under `[dependencies]`:
 
 	```toml
-	Remotes = "chipioindustries/remotes@1.0.0"
+	Remotes = "chipioindustries/remotes@1.0.1"
 	```
 
 * Then run `wally install` to install the package.

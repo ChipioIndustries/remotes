@@ -130,7 +130,7 @@ function Remotes:getEventAsync(name: string)
 					local dropCall, args = self:_executeMiddleware({...}, metadata)
 
 					if not dropCall then
-						remote:_fireServer(unpack(args))
+						dummyRemote:_fireServer(unpack(args))
 					end
 				end)
 
@@ -168,7 +168,7 @@ function Remotes:getFunctionAsync(name: string)
 					local dropCall, args = self:_executeMiddleware({...}, metadata)
 
 					if not dropCall then
-						return remote:_invokeServer(unpack(args))
+						return dummyRemote:_invokeServer(unpack(args))
 					end
 
 					return nil
