@@ -9,7 +9,7 @@ dependencies = [["Llama", "freddylist/llama@1.1.1"]]
 
 [[package]]
 name = "chipioindustries/remotes"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [["Llama", "freddylist/llama@1.1.1"], ["Rapscallion", "chipioindustries/rapscallion@1.0.4"], ["Signal", "chipioindustries/signal@1.1.1"]]
 
 [[package]]

@@ -11,7 +11,7 @@ Remotes is meant to be installed with Wally, an open source package manager.
 * Add this line to your `wally.toml` file under `[dependencies]`:
 
 	```toml
-	Remotes = "chipioindustries/remotes@1.0.3"
+	Remotes = "chipioindustries/remotes@1.0.4"
 	```
 
 * Then run `wally install` to install the package.
