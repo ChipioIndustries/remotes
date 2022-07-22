@@ -4,7 +4,7 @@ description = "A handler for RemoteEvent and RemoteFunction instances."
 version = "1.0.4"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
-exclude = ["docs", ".github", "DevPackages", "Packages", "test", ".gitignore", "CHANGELOG.md", "foreman.toml", "getLatestChangelog.py", "LICENSE", "README.md", "selene.toml", "testez.toml", "wally.exe", "yarn.lock"]
+exclude = ["*"]
 include = ["src", "wally.toml", "wally.lock", "default.project.json"]
 
 [dependencies]
