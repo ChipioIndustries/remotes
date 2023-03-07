@@ -1,3 +1,7 @@
+## v2.0.0
+
+Remove dummy remote functionality.
+
 ## v1.0.6
 
 * Test release, no changes.

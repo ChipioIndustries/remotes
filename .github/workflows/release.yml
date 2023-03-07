@@ -9,6 +9,8 @@ jobs:
   build:
     name: Create Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2.3.4
@@ -18,14 +20,14 @@ jobs:
         with:
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - name: Publish to Wally
+      - name: Add Wally Auth
         shell: bash
         env:
           WALLY_AUTH: ${{secrets.WALLY_AUTH}}
         run: |
           mkdir -p ~/.wally
           echo "$WALLY_AUTH" > ~/.wally/auth.toml
-          wally publish -v
+          wally publish
 
       - name: Get version
         id: get_version
