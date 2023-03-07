@@ -1,7 +1,3 @@
-![Unit Tests](https://github.com/chipioindustries/remotes/actions/workflows/ci.yml/badge.svg)
-![Create Release](https://github.com/chipioindustries/remotes/actions/workflows/release.yml/badge.svg)
-![Docs Deploy](https://github.com/chipioindustries/remotes/actions/workflows/docs-deploy.yml/badge.svg)
-
 # Remotes
 
 Remotes is a template for creating Roblox package repositories.
